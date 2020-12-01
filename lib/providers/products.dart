@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:dukaan/providers/product.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class Products with ChangeNotifier {
   List<Product> _items = <Product>[
@@ -28,15 +31,31 @@ class Products with ChangeNotifier {
     return _items.where((prod) => prod.isFavourite).toList();
   }
 
-  void addProduct(Product product) {
-    final newProduct = Product(
+  Future<void> addProduct(Product product) {
+    const url = "https://dukaan-5902a.firebaseio.com/products.json";
+    return http
+        .post(url,
+            body: json.encode({
+              "title": product.title,
+              "description": product.description,
+              "imgeUrl": product.imgUrl,
+              "id": DateTime.now().toString(),
+              "price": product.price,
+              "isFavourite": product.isFavourite,
+            }))
+        .then((response) {
+      final jsonResponse = json.decode(response.body);
+      final newProduct = Product(
         title: product.title,
         description: product.description,
         imgUrl: product.imgUrl,
-        id: DateTime.now().toString(),
-        price: product.price);
-    _items.add(newProduct);
-    notifyListeners();
+        id: jsonResponse['name'],
+        price: product.price,
+        isFavourite: product.isFavourite,
+      );
+      _items.add(newProduct);
+      notifyListeners();
+    });
   }
 
   void updateProduct(String id, Product product) {
