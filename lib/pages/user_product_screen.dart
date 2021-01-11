@@ -12,6 +12,10 @@ class UserProductScreen extends StatefulWidget {
 }
 
 class _UserProductScreenState extends State<UserProductScreen> {
+  Future<void> _refereshProducts(BuildContext context) async {
+    await Provider.of<Products>(context).fetchAndSetProduct();
+  }
+
   @override
   Widget build(BuildContext context) {
     final productData = Provider.of<Products>(context);
@@ -30,15 +34,18 @@ class _UserProductScreenState extends State<UserProductScreen> {
         ],
       ),
       drawer: DrawerProductPage(),
-      body: ListView.builder(
-        itemBuilder: (context, index) {
-          return Column(children: [
-            UserProductItem(
-                productData.items[index], productData.deleteProduct),
-            Divider(),
-          ]);
-        },
-        itemCount: productData.items.length,
+      body: RefreshIndicator(
+        onRefresh: () => _refereshProducts(context),
+        child: ListView.builder(
+          itemBuilder: (context, index) {
+            return Column(children: [
+              UserProductItem(
+                  productData.items[index], productData.deleteProduct),
+              Divider(),
+            ]);
+          },
+          itemCount: productData.items.length,
+        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:dukaan/providers/cart.dart';
 import 'package:dukaan/providers/orders.dart';
 import 'package:dukaan/widgets/cart_item.dart';
+import 'package:dukaan/widgets/product_page_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,6 +14,7 @@ class CartPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Your Cart"),
       ),
+      drawer: DrawerProductPage(),
       body: Column(
         children: [
           Padding(
@@ -29,15 +31,7 @@ class CartPage extends StatelessWidget {
                       label: Text(cart.totalAmount.toString()),
                       backgroundColor: Theme.of(context).primaryColor,
                     ),
-                    FlatButton(
-                      child: const Text("ORDER NOW"),
-                      onPressed: () {
-                        Provider.of<Orders>(context, listen: false).addOrder(
-                            cart.items.values.toList(), cart.totalAmount);
-                        cart.clear();
-                      },
-                      textColor: Theme.of(context).primaryColor,
-                    )
+                    OrderButton(cart: cart),
                   ],
                 ),
               ),
@@ -52,6 +46,42 @@ class CartPage extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key key,
+    @required this.cart,
+  }) : super(key: key);
+
+  final Cart cart;
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  bool _isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      child: _isLoading ? CircularProgressIndicator() : const Text("ORDER NOW"),
+      onPressed: (widget.cart.totalAmount <= 0 || _isLoading)
+          ? null
+          : () async {
+              setState(() {
+                _isLoading = true;
+              });
+              await Provider.of<Orders>(context, listen: false).addOrder(
+                  widget.cart.items.values.toList(), widget.cart.totalAmount);
+              widget.cart.clear();
+              setState(() {
+                _isLoading = false;
+              });
+            },
+      textColor: Theme.of(context).primaryColor,
     );
   }
 }

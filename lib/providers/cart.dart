@@ -1,3 +1,4 @@
+import 'package:dukaan/providers/product.dart';
 import 'package:flutter/material.dart';
 
 class CartItemModel {
@@ -10,6 +11,24 @@ class CartItemModel {
     @required this.price,
     @required this.quantity,
   });
+  static Map<String, dynamic> toJson(CartItemModel cartItemModel) {
+    return {
+      'id': cartItemModel.id,
+      'name': cartItemModel.name,
+      'price': cartItemModel.price,
+      'quantity': cartItemModel.quantity,
+    };
+  }
+
+  factory CartItemModel.fromJson(Map<String, dynamic> json, {String id}) {
+    String _id = id ?? json['id'];
+    return CartItemModel(
+      id: _id,
+      name: json['name'],
+      price: json['price'],
+      quantity: json['quantity'],
+    );
+  }
 }
 
 class Cart with ChangeNotifier {
@@ -24,7 +43,7 @@ class Cart with ChangeNotifier {
 
   double get totalAmount {
     double total = 0.0;
-    _items.forEach((key, value) => total += value.price);
+    _items.forEach((key, value) => total += (value.price) * value.quantity);
     return total;
   }
 

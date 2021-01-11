@@ -1,5 +1,6 @@
 import 'package:dukaan/pages/cart_page.dart';
 import 'package:dukaan/providers/cart.dart';
+import 'package:dukaan/providers/products.dart';
 import 'package:dukaan/widgets/badge.dart';
 import 'package:dukaan/widgets/product_page_drawer.dart';
 import 'package:dukaan/widgets/products_grid.dart';
@@ -20,6 +21,22 @@ class ProductOverviewScreen extends StatefulWidget {
 
 class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   bool _showFavourite = false;
+  bool _firstInit = true;
+  bool _isLoading = true;
+
+  @override
+  void didChangeDependencies() {
+    if (_firstInit) {
+      Provider.of<Products>(context).fetchAndSetProduct().then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      });
+      _firstInit = false;
+    }
+    super.didChangeDependencies();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,7 +76,17 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
           ),
         ],
       ),
-      body: ProductsGrid(_showFavourite),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+              backgroundColor: Theme.of(context).primaryColor,
+            ))
+          : RefreshIndicator(
+              onRefresh: () async {
+                Provider.of<Products>(context, listen: false)
+                    .fetchAndSetProduct();
+              },
+              child: ProductsGrid(_showFavourite)),
       drawer: DrawerProductPage(),
     );
   }
