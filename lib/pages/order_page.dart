@@ -12,10 +12,15 @@ class OrderPage extends StatefulWidget {
 }
 
 class _OrderPageState extends State<OrderPage> {
+  bool _isLoading = true;
   @override
   void initState() {
     Future.delayed(Duration.zero, () {
-      Provider.of<Orders>(context, listen: false).fetchAndSetOrders();
+      Provider.of<Orders>(context, listen: false)
+          .fetchAndSetOrders()
+          .then((value) => setState(() {
+                _isLoading = false;
+              }));
     });
     super.initState();
   }
@@ -27,19 +32,23 @@ class _OrderPageState extends State<OrderPage> {
         title: const Text("Your Orders"),
       ),
       drawer: DrawerProductPage(),
-      body: Consumer<Orders>(
-        builder: (context, orders, _) => ListView.builder(
-          itemBuilder: (ctx, index) {
-            if (orders.orders.length > 0) {
-              return OrderItem(orders.orders[index]);
-            }
-            return Center(
+      body: _isLoading
+          ? Center(
               child: CircularProgressIndicator(),
-            );
-          },
-          itemCount: orders.orders.length,
-        ),
-      ),
+            )
+          : Consumer<Orders>(
+              builder: (context, orders, _) => ListView.builder(
+                itemBuilder: (ctx, index) {
+                  if (orders.noOrdersYet) {
+                    return Center(
+                      child: Text("No Orders made Yet"),
+                    );
+                  }
+                  return OrderItem(orders.orders[index]);
+                },
+                itemCount: orders.orders.length,
+              ),
+            ),
     );
   }
 }

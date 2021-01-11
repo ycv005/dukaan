@@ -47,6 +47,10 @@ class Orders with ChangeNotifier {
     return [..._orders];
   }
 
+  bool _noOrders = false;
+
+  bool get noOrdersYet => _noOrders;
+
   Future<void> addOrder(List<CartItemModel> cartProducts, double total) async {
     const url = "https://dukaan-5902a.firebaseio.com/orders.json";
     final timeStamp = DateTime.now();
@@ -80,14 +84,16 @@ class Orders with ChangeNotifier {
     try {
       final response = await http.get(url);
       final jsonDecoded = json.decode(response.body) as Map<String, dynamic>;
-      print("here is the json $jsonDecoded");
-      List<OrderItem> loadedOrders = [];
-      jsonDecoded.forEach((key, value) {
-        print("here into jsonDecoded");
-        loadedOrders.add(OrderItem.fromJson(key, value));
-      });
-      _orders = loadedOrders;
-      print("here is the loadorder- $loadedOrders");
+      if (jsonDecoded == null) {
+        _noOrders = true;
+      } else {
+        List<OrderItem> loadedOrders = [];
+        jsonDecoded.forEach((key, value) {
+          print("here into jsonDecoded");
+          loadedOrders.add(OrderItem.fromJson(key, value));
+        });
+        _orders = loadedOrders;
+      }
       notifyListeners();
     } catch (e) {}
   }

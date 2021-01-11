@@ -16,17 +16,25 @@ class Products with ChangeNotifier {
     return _items.where((prod) => prod.isFavourite).toList();
   }
 
+  bool _noProduct = false;
+
+  bool get noProduct => _noProduct;
+
   Future<void> fetchAndSetProduct() async {
     const url = "https://dukaan-5902a.firebaseio.com/products.json";
     try {
       final response = await http.get(url);
       final Map<String, dynamic> jsonDecoded =
           json.decode(response.body) as Map;
-      final List<Product> loadedProducts = [];
-      jsonDecoded.forEach((productId, productData) {
-        loadedProducts.add(Product.fromJson(productId, productData));
-      });
-      _items = loadedProducts;
+      if (jsonDecoded == null) {
+        _noProduct = true;
+      } else {
+        final List<Product> loadedProducts = [];
+        jsonDecoded.forEach((productId, productData) {
+          loadedProducts.add(Product.fromJson(productId, productData));
+        });
+        _items = loadedProducts;
+      }
       notifyListeners();
     } catch (e) {
       throw (e);
