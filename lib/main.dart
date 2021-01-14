@@ -1,3 +1,4 @@
+import 'package:dukaan/pages/auth_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         accentColor: Colors.yellowAccent,
       ),
-      home: ProductOverviewScreen(),
+      home: AuthScreen(),
       routes: {
         ProductDetail.routeName: (ctx) => ProductDetail(),
         CartPage.routeName: (ctx) => CartPage(),
