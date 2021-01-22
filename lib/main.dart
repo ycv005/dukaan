@@ -1,4 +1,5 @@
 import 'package:dukaan/pages/auth_screen.dart';
+import 'package:dukaan/providers/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -15,7 +16,12 @@ import './providers/products.dart';
 void main() {
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (BuildContext context) => Products()),
+      ChangeNotifierProvider(create: (BuildContext context) => Auth()),
+      ChangeNotifierProxyProvider<Auth, Products>(
+        update: (BuildContext context, auth, Products previousProducts) =>
+            previousProducts..setAuthToken(auth.getUserAuthToken),
+        create: (BuildContext context) => Products(),
+      ),
       ChangeNotifierProvider(create: (BuildContext context) => Cart()),
       ChangeNotifierProvider(create: (BuildContext context) => Orders()),
     ],
@@ -35,7 +41,10 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         accentColor: Colors.yellowAccent,
       ),
-      home: AuthScreen(),
+      home: Consumer<Auth>(
+        builder: (context, auth, _) =>
+            auth.isAuthenticated ? ProductOverviewScreen() : AuthScreen(),
+      ),
       routes: {
         ProductDetail.routeName: (ctx) => ProductDetail(),
         CartPage.routeName: (ctx) => CartPage(),

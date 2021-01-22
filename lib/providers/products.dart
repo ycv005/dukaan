@@ -7,6 +7,13 @@ import 'package:http/http.dart' as http;
 
 class Products with ChangeNotifier {
   List<Product> _items = [];
+  String _authToken;
+
+  Products();
+
+  void setAuthToken(String token) {
+    _authToken = token;
+  }
 
   List<Product> get items {
     return [..._items];
@@ -21,7 +28,8 @@ class Products with ChangeNotifier {
   bool get noProduct => _noProduct;
 
   Future<void> fetchAndSetProduct() async {
-    const url = "https://dukaan-5902a.firebaseio.com/products.json";
+    final String url =
+        "https://dukaan-5902a.firebaseio.com/products.json?auth=$_authToken";
     try {
       final response = await http.get(url);
       final Map<String, dynamic> jsonDecoded =

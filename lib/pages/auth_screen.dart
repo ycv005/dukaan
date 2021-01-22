@@ -1,6 +1,9 @@
 import 'dart:math';
 
+import 'package:dukaan/models/http_exception.dart';
+import 'package:dukaan/providers/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 enum AuthMode { Signup, Login }
 
@@ -101,7 +104,23 @@ class _AuthCardState extends State<AuthCard> {
   var _isLoading = false;
   final _passwordController = TextEditingController();
 
-  void _submit() {
+  void _showErrorDialog(String msg) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("An Error Occured"),
+        content: Text(msg),
+        actions: [
+          FlatButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text("Okay"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
     if (!_formKey.currentState.validate()) {
       // Invalid!
       return;
@@ -110,11 +129,33 @@ class _AuthCardState extends State<AuthCard> {
     setState(() {
       _isLoading = true;
     });
-    if (_authMode == AuthMode.Login) {
-      // Log user in
-    } else {
-      // Sign user up
+    final authProvider = Provider.of<Auth>(context, listen: false);
+    try {
+      if (_authMode == AuthMode.Login) {
+        // Log user in
+        await authProvider.login(
+          _authData['email'],
+          _authData['password'],
+        );
+      } else {
+        // Sign user up
+        await authProvider.signUp(
+          _authData['email'],
+          _authData['password'],
+        );
+      }
+    } on HttpException catch (error) {
+      String msg = "Auth Failed";
+      if (error.toString().toLowerCase().contains('email') &&
+          error.toString().toLowerCase().contains('exists')) {
+        msg = "Already used email";
+      }
+      _showErrorDialog(msg);
+    } catch (error) {
+      String msg = "Unable to connect, Please try again";
+      _showErrorDialog(msg);
     }
+
     setState(() {
       _isLoading = false;
     });
