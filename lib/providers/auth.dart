@@ -24,6 +24,13 @@ class Auth with ChangeNotifier {
     return null;
   }
 
+  String get getUserId {
+    if (getUserAuthToken != null) {
+      return _userId;
+    }
+    return null;
+  }
+
   Future<void> _authenticate(String email, String password, String url) async {
     try {
       final response = await http.post(

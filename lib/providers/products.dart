@@ -8,11 +8,13 @@ import 'package:http/http.dart' as http;
 class Products with ChangeNotifier {
   List<Product> _items = [];
   String _authToken;
+  String _userId;
 
   Products();
 
-  void setAuthToken(String token) {
+  void setValues(String token, String userId) {
     _authToken = token;
+    _userId = userId;
   }
 
   List<Product> get items {
@@ -27,9 +29,12 @@ class Products with ChangeNotifier {
 
   bool get noProduct => _noProduct;
 
-  Future<void> fetchAndSetProduct() async {
+  Future<void> fetchAndSetProduct({bool filterByUser = false}) async {
+    final filterString =
+        filterByUser ? '&orderBy="createdBy"&equalTo="$_userId"' : '';
     final String url =
-        "https://dukaan-5902a.firebaseio.com/products.json?auth=$_authToken";
+        'https://dukaan-5902a.firebaseio.com/products.json?auth=$_authToken' +
+            filterString;
     try {
       final response = await http.get(url);
       final Map<String, dynamic> jsonDecoded =
@@ -50,7 +55,8 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) {
-    const url = "https://dukaan-5902a.firebaseio.com/products.json";
+    final url =
+        "https://dukaan-5902a.firebaseio.com/products.json?auth=$_authToken";
     return http
         .post(url,
             body: json.encode({
@@ -60,6 +66,7 @@ class Products with ChangeNotifier {
               "id": DateTime.now().toString(),
               "price": product.price,
               "isFavourite": product.isFavourite,
+              "createdBy": _userId,
             }))
         .then((response) {
       final jsonResponse = json.decode(response.body);
@@ -81,7 +88,8 @@ class Products with ChangeNotifier {
   Future<void> updateProduct(String id, Product product) async {
     final index = _items.indexWhere((element) => element.id == id);
     if (index >= 0) {
-      final url = "https://dukaan-5902a.firebaseio.com/products/$id.json";
+      final url =
+          "https://dukaan-5902a.firebaseio.com/products/$id.json?auth=$_authToken";
       try {
         await http.patch(url,
             body: json.encode(Product.toJson(product).remove('isFavourite')));
@@ -95,7 +103,8 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProduct(String id) async {
     try {
-      final url = "https://dukaan-5902a.firebaseio.com/products/$id.json";
+      final url =
+          "https://dukaan-5902a.firebaseio.com/products/$id.json?auth=$_authToken";
       final response = await http.delete(url);
       if (response.statusCode >= 400) {
         throw HttpException("Could not delete Product.");

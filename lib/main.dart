@@ -19,11 +19,15 @@ void main() {
       ChangeNotifierProvider(create: (BuildContext context) => Auth()),
       ChangeNotifierProxyProvider<Auth, Products>(
         update: (BuildContext context, auth, Products previousProducts) =>
-            previousProducts..setAuthToken(auth.getUserAuthToken),
+            previousProducts..setValues(auth.getUserAuthToken, auth.getUserId),
         create: (BuildContext context) => Products(),
       ),
       ChangeNotifierProvider(create: (BuildContext context) => Cart()),
-      ChangeNotifierProvider(create: (BuildContext context) => Orders()),
+      ChangeNotifierProxyProvider<Auth, Orders>(
+        create: (BuildContext context) => Orders(),
+        update: (context, auth, previousOrders) =>
+            previousOrders..setAuthToken(auth.getUserAuthToken),
+      ),
     ],
     child: MyApp(),
   ));

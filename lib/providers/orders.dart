@@ -41,10 +41,15 @@ class OrderItem {
 }
 
 class Orders with ChangeNotifier {
+  String _authToken;
   List<OrderItem> _orders = [];
 
   List<OrderItem> get orders {
     return [..._orders];
+  }
+
+  void setAuthToken(String token) {
+    _authToken = token;
   }
 
   bool _noOrders = false;
@@ -52,7 +57,8 @@ class Orders with ChangeNotifier {
   bool get noOrdersYet => _noOrders;
 
   Future<void> addOrder(List<CartItemModel> cartProducts, double total) async {
-    const url = "https://dukaan-5902a.firebaseio.com/orders.json";
+    final url =
+        "https://dukaan-5902a.firebaseio.com/orders.json?auth=$_authToken";
     final timeStamp = DateTime.now();
     final OrderItem orderItem = OrderItem(
       id: timeStamp.toString(),
@@ -80,7 +86,8 @@ class Orders with ChangeNotifier {
   }
 
   Future<void> fetchAndSetOrders() async {
-    const url = "https://dukaan-5902a.firebaseio.com/orders.json";
+    final url =
+        "https://dukaan-5902a.firebaseio.com/orders.json?auth=$_authToken";
     try {
       final response = await http.get(url);
       final jsonDecoded = json.decode(response.body) as Map<String, dynamic>;
