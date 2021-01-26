@@ -1,4 +1,5 @@
 import 'package:dukaan/pages/auth_screen.dart';
+import 'package:dukaan/pages/loading_screen.dart';
 import 'package:dukaan/providers/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +27,7 @@ void main() {
       ChangeNotifierProxyProvider<Auth, Orders>(
         create: (BuildContext context) => Orders(),
         update: (context, auth, previousOrders) =>
-            previousOrders..setAuthToken(auth.getUserAuthToken),
+            previousOrders..setValues(auth.getUserAuthToken, auth.getUserId),
       ),
     ],
     child: MyApp(),
@@ -46,8 +47,17 @@ class MyApp extends StatelessWidget {
         accentColor: Colors.yellowAccent,
       ),
       home: Consumer<Auth>(
-        builder: (context, auth, _) =>
-            auth.isAuthenticated ? ProductOverviewScreen() : AuthScreen(),
+        builder: (context, auth, _) => auth.isAuthenticated
+            ? ProductOverviewScreen()
+            : FutureBuilder(
+                future: auth.tryAutoLogin(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return LoadingScreen();
+                  }
+                  return AuthScreen();
+                },
+              ),
       ),
       routes: {
         ProductDetail.routeName: (ctx) => ProductDetail(),

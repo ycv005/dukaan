@@ -1,11 +1,14 @@
 import 'package:dukaan/pages/cart_page.dart';
 import 'package:dukaan/pages/order_page.dart';
 import 'package:dukaan/pages/user_product_screen.dart';
+import 'package:dukaan/providers/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DrawerProductPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<Auth>(context, listen: false);
     return Drawer(
       child: Column(
         children: [
@@ -37,6 +40,16 @@ class DrawerProductPage extends StatelessWidget {
             leading: Icon(Icons.edit),
             onTap: () => Navigator.of(context)
                 .pushReplacementNamed(UserProductScreen.routeName),
+          ),
+          Divider(),
+          ListTile(
+            title: Text("Exit from App"),
+            leading: Icon(Icons.exit_to_app),
+            onTap: () {
+              Navigator.of(context).pop();
+              authProvider.logout();
+              Navigator.of(context).pushReplacementNamed('/');
+            },
           ),
           Divider(),
         ],

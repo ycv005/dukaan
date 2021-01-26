@@ -42,14 +42,16 @@ class OrderItem {
 
 class Orders with ChangeNotifier {
   String _authToken;
+  String _userId;
   List<OrderItem> _orders = [];
 
   List<OrderItem> get orders {
     return [..._orders];
   }
 
-  void setAuthToken(String token) {
+  void setValues(String token, String userId) {
     _authToken = token;
+    _userId = userId;
   }
 
   bool _noOrders = false;
@@ -58,7 +60,7 @@ class Orders with ChangeNotifier {
 
   Future<void> addOrder(List<CartItemModel> cartProducts, double total) async {
     final url =
-        "https://dukaan-5902a.firebaseio.com/orders.json?auth=$_authToken";
+        "https://dukaan-5902a.firebaseio.com/orders/$_userId.json?auth=$_authToken";
     final timeStamp = DateTime.now();
     final OrderItem orderItem = OrderItem(
       id: timeStamp.toString(),
@@ -87,7 +89,7 @@ class Orders with ChangeNotifier {
 
   Future<void> fetchAndSetOrders() async {
     final url =
-        "https://dukaan-5902a.firebaseio.com/orders.json?auth=$_authToken";
+        "https://dukaan-5902a.firebaseio.com/orders/$_userId.json?auth=$_authToken";
     try {
       final response = await http.get(url);
       final jsonDecoded = json.decode(response.body) as Map<String, dynamic>;
